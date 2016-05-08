@@ -7,8 +7,9 @@ public class Main {
         String file = "/home/cj/ClionProjects/SPTReader/main.cpp";
         try {
             CPPSource cppSource = CPPSource.parse(file);
-            cppSource.getClass("Packet");
-        } catch (IOException e) {
+            System.out.println(cppSource.getClass("Packet").getFunction("getTitle"));
+            System.out.println(cppSource.getClass("Packet").getFunction("getContent"));
+        }catch (Exception e){
             e.printStackTrace();
         }
     }

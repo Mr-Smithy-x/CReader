@@ -45,15 +45,29 @@ public class CPPSource {
     }
 
     //region Classes
-    private static class CPPClassObject {
+    public static class CPPClassObject {
 
-        private static void ParseFunctions(String cpp){
+        HashMap<String, String> functions = new HashMap<>();
+        HashMap<String, String> constructor =  new HashMap<>();
+        List<String> fields = new ArrayList<>();
+
+
+        private void ParseFunctions(String cpp, String clazzName){
             int delim = 0;
             boolean entered = false;
             int first = -1;
             int second = -1;
-            String[] c = cpp.split("\n");
+            String[] c = new String[cpp.split("\n").length-2];
+            Arrays.asList(cpp.split("\n")).subList(1,cpp.split("\n").length-1).toArray(c);
             for(int i = 0; i < c.length; i++){
+                if(c[i].contains(";") && !c[i].contains("(") && !c[i].contains("->") && !c[i].contains(".") && !c[i].contains("return")){
+                    String[] old = c[i].trim().replaceAll(",","").replaceAll(";","").split(" ");
+                    String[] values = new String[old.length-1];
+                    Arrays.asList(old).subList(1, old.length).toArray(values);
+                    for(String s : values){
+                        fields.add(s);
+                    }
+                }
                 if(c[i].contains("{")) {
                     delim++;
                     entered = true;
@@ -74,12 +88,14 @@ public class CPPSource {
                     for(String b : a){
                         sb.append(b + "\n");
                     }
-                    String beg = a.get(0);
-
-                    if(!beg.contains("class") && beg.contains("(")){
+                    String beg = a.get(0).trim();
+                    if(!beg.startsWith(clazzName) && !beg.contains("class") && beg.contains("(")){
                         String name = beg.split(" ")[1];
                         name = name.substring(0,name.indexOf("("));
-                        //   functions.put(name, sb.toString());
+                        functions.put(name, sb.toString());
+                    }else if(beg.startsWith(clazzName) && !beg.contains("class") && beg.contains("(")){
+                        String name = beg.substring(0,beg.indexOf("("));
+                        constructor.put(name, sb.toString());
                     }
                     first = -1;
                     second = -1;
@@ -87,10 +103,16 @@ public class CPPSource {
             }
         }
 
+        public String getFunction(String functionName){
+            if(functions.containsKey(functionName)){
+                return functions.get(functionName);
+            }else return null;
+        }
 
         public static CPPClassObject Parse(String clazzName, String clazz){
-            ParseFunctions(clazz);
-            return null;
+            CPPClassObject cppClassObject = new CPPClassObject();
+            cppClassObject.ParseFunctions(clazz,clazzName);
+            return cppClassObject;
         }
     }
 
